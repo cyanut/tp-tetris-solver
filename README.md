@@ -12,9 +12,11 @@ A SMT solver supported by Data.SBV
 ghc solver.hs -o solver
 solver h w blocks
 ```
-where
+where:
 `h`: height of the board
+
 `w`: width of the board
+
 `blocks`: string of I,O,T,S,Z,J,L, representing all the tetris blocks listed
 below
 ```
@@ -64,6 +66,6 @@ d d k k a a a c
 
 real	11m5.480s
 user	11m5.357s
-sys	    0m0.130s
+sys	0m0.130s
 ```
 

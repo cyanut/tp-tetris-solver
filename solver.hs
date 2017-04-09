@@ -4,7 +4,6 @@ import Data.SBV
 import System.Environment (getArgs)
 import Data.List (transpose, reverse, intersperse)
 import Data.Maybe (isJust, fromJust)
-import Debug.Trace
 import Data.Function (on)
 import Data.List (sortBy)
 import Control.Monad (forM_)
