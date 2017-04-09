@@ -2,9 +2,9 @@
 A solver for the tetris puzzles in Talos Principle, using an SMT solver with Haskell.
 
 # Dependency
-Haskell
-[Data.SBV](http://github.com/LeventErkok/sbv)
-A SMT solver supported by Data.SBV
+- GHC
+- [Data.SBV](http://github.com/LeventErkok/sbv)
+- A SMT solver supported by Data.SBV
 
 
 # Usage
