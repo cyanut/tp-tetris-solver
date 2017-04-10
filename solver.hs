@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
 
 import Data.SBV
 import System.Environment (getArgs)
@@ -6,7 +5,10 @@ import Data.List (transpose, reverse, intersperse)
 import Data.Maybe (isJust, fromJust)
 import Data.Function (on)
 import Data.List (sortBy)
-import Control.Monad (forM_)
+import Control.Monad (forM_, forM)
+import Control.Concurrent.Async (Async, waitAnyCancel, async)
+import System.Random (randomRIO)
+import GHC.Conc (numCapabilities)
 
 data Args = Args {
     argH :: Int,
@@ -28,29 +30,37 @@ type SymBlock = [SymPos]
 type Board = [SymBlock]
     
 allBlocks :: [Block]
-allBlocks = [Block 'I' ["xxxx"]
+allBlocks = [Block 'I' ["xxxx"] 
 
            , Block 'O' ["xx",
-                        "xx"]
+                        "xx"] 
 
            , Block 'T' ["xxx",
-                        " x "]
+                        " x "] 
 
            , Block 'S' [" xx",
-                        "xx "]
+                        "xx "] 
 
            , Block 'Z' ["xx ",
-                        " xx"]
+                        " xx"] 
          
            , Block 'J' [" x",
                         " x",
-                        "xx"]
+                        "xx"] 
           
            , Block 'L' ["x ",
                         "x ",
-                        "xx"]
+                        "xx"] 
         ] 
-
+-- Get rotational symmetry
+nRot :: Block -> Int
+nRot b = length $  nRot' bs bs
+    where bs = blkShape b
+          nRot' bs nbs 
+                |rbs == bs = [nbs]
+                |otherwise = nbs : nRot' bs rbs
+                where rbs = rot90 nbs
+                          
 
 numTile = length . (filter (/= ' ')) . concat 
 
@@ -95,11 +105,12 @@ localConstraint :: [[Maybe SymPos]] -> SBool
 localConstraint sb = bAnd (map (connLine eastOf) sb)
      &&& bAnd (map (connLine southOf) $ transpose sb)
 
-connBlock :: [SymUnit] -> BlockShape -> SBool
+connBlock :: [SymUnit] -> Block -> SBool
 connBlock xs b =  bOr $ map localConstraint allRot
     where 
-        allRot = take 4 $ iterate rot90 sb
-        sb = varReplace xs b
+        allRot = take (nRot b) $ iterate rot90 sb
+        sb = varReplace xs (blkShape b) 
+
 
 isValid :: Args -> [SymUnit] -> SBool
 isValid args xs = blockConstraints xs bs 
@@ -108,10 +119,10 @@ isValid args xs = blockConstraints xs bs
     where 
         w = fromIntegral $ argW args
         h = fromIntegral $ argH args
-        bs = map (blkShape . getBlock) (argBlock args)
+        bs = map getBlock (argBlock args)
         blockConstraints _ [] = literal True
         blockConstraints xs (b:bs) = connBlock bx b &&& blockConstraints xs' bs
-            where nvar = 2 * numTile b
+            where nvar = 2 * numTile (blkShape b)
                   (bx, xs') = splitAt nvar xs
         numXs [] = []
         numXs (y:x:xs) = (y * w + x) : numXs xs
@@ -140,16 +151,29 @@ dispSoln args vs = forM_ (fmtRes vs) putStrLn
         shapedNums vs = reshape (argH args, argW args) (orderedNums vs)
         fmtRes vs = map (intersperse ' ') (shapedNums vs)
 
+solveBoard :: Args -> IO SatResult
+solveBoard args = sat (isValid args <$> mkExistVars n)
+    where n = (argW args) * (argH args) * 2 
+
+pSolveBoard :: [Args] -> IO SatResult
+pSolveBoard argss = do
+    asyncArgs <- mapM (async . solveBoard) argss
+    res <- waitAnyCancel asyncArgs
+    return (snd res)
+
+shuffle :: [a] -> IO [a]
+shuffle x = if length x < 2 then return x else do
+    i <- randomRIO (0, length x -1)
+    r <- shuffle (take i x ++ drop (i+1) x)
+    return (x!!i : r)
+
+
 
 main = do
     args <- parseArgs <$> getArgs
-    let n = (argW args) * (argH args) * 2 
-    res <- extractModel <$> sat (isValid args <$> mkExistVars n)
+    let j = numCapabilities
+        s = argBlock args
+    blocks <- forM [1..j] $ \x -> shuffle s
+    let pargs = map (\x -> args {argBlock = x}) blocks
+    res <- extractModel <$> pSolveBoard pargs
     dispRes args res
-    {-
-    resAll <- extractModels <$> allSat (isValid args <$> mkExistVars n)
-    forM_ resAll $ \x -> do 
-        putStrLn "-----------"
-        dispSoln args x
-    -}
-    
