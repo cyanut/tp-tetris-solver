@@ -53,6 +53,12 @@ significantly shortens the time to run.
 
 Number of the parallel solver can be controlled by setting the Haskell runtime system with `+RTS -N<number of threads>` (see the second example below)
 
+# Color
+Pipe the output to the `colorize` script for color. For example:
+```
+solver 4 4 TTLZ | bash colorize
+```
+
 # Example:
 ```
 $ solver 4 4 TTLZ

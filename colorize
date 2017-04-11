@@ -1,0 +1,27 @@
+a="s/a/$(tput setaf 1)a$(tput sgr0)/g
+    s/b/$(tput setaf 2)b$(tput sgr0)/g
+    s/c/$(tput setaf 3)c$(tput sgr0)/g
+    s/d/$(tput setaf 13)d$(tput sgr0)/g
+    s/e/$(tput setaf 5)e$(tput sgr0)/g
+    s/f/$(tput setaf 6)f$(tput sgr0)/g
+    s/g/$(tput setaf 8)g$(tput sgr0)/g
+    s/h/$(tput setaf 9)h$(tput sgr0)/g
+    s/i/$(tput setaf 10)i$(tput sgr0)/g
+    s/j/$(tput setaf 11)j$(tput sgr0)/g
+    s/k/$(tput setaf 12)k$(tput sgr0)/g
+    s/l/$(tput setaf 13)l$(tput sgr0)/g
+    s/n/$(tput setaf 14)n$(tput sgr0)/g
+    s/o/$(tput setaf 15)o$(tput sgr0)/g
+    s/p/$(tput setaf 16)p$(tput sgr0)/g
+    s/q/$(tput setaf 17)q$(tput sgr0)/g
+    s/r/$(tput setaf 18)r$(tput sgr0)/g
+    s/s/$(tput setaf 19)s$(tput sgr0)/g
+    s/t/$(tput setaf 20)t$(tput sgr0)/g
+    s/u/$(tput setaf 21)u$(tput sgr0)/g
+    s/v/$(tput setaf 22)v$(tput sgr0)/g
+    s/w/$(tput setaf 23)w$(tput sgr0)/g
+    s/x/$(tput setaf 24)x$(tput sgr0)/g
+    s/y/$(tput setaf 25)y$(tput sgr0)/g
+    s/z/$(tput setaf 26)z$(tput sgr0)/g
+    "
+sed "$a"
